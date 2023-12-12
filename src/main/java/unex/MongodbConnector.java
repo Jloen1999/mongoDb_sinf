@@ -51,17 +51,9 @@ public class MongodbConnector {
                     ansi().fg(BLUE).a(             "\t\t\t\t\t\t\t\t\tInsertar datos"         ).reset() + "\n" +
                     ansi().fg(YELLOW).a("╠═══════════════════════════════════════════════════════════════════════════════════════════════════════════════╣\n").reset()));
 
-            // Insertar registros
-//            InsertarDatos insertarDatos = new InsertarDatos(db);
-//            insertarDatos.getDataList(); // Obtener datos de insercion de fichero
-//            insertarDatos.insertDataDestinos(50); // Insertar destinos
-//            insertarDatos.insertDataPaquetes(100); // Insertar paquetes
-//            insertarDatos.insertDataClientes(200); // Insertar clientes
-//            insertarDatos.insertDataReservas(500); // Insertar reservas
-
             // Ejecutar consultas
             QueryExecutator queryExecutator = new QueryExecutator(db);
-            queryExecutator.executeQueries();
+            queryExecutator.menuPrincipal();
 
 
             System.out.println(ansi().fg(YELLOW).a(("================Datos inicializados================")).reset());

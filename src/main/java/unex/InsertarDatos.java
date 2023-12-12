@@ -2,8 +2,10 @@ package unex;
 
 import com.github.javafaker.Faker;
 import com.mongodb.Function;
+import com.mongodb.MongoCommandException;
 import com.mongodb.client.*;
 import com.mongodb.client.model.*;
+import com.mongodb.client.result.DeleteResult;
 import org.bson.Document;
 import org.bson.types.Binary;
 import org.bson.types.Decimal128;
@@ -799,4 +801,121 @@ public class InsertarDatos {
 
         System.out.println(ansi().fg(GREEN).a("Índice compuesto creado con éxito.").reset());
     }
+
+    public void cargarDatos() {
+        getDataList(); // Obtener datos de insercion de fichero
+        insertDataDestinos(50); // Insertar destinos
+        insertDataPaquetes(100); // Insertar paquetes
+        insertDataClientes(200); // Insertar clientes
+        insertDataReservas(500); // Insertar reservas
+    }
+
+    public void limpiarDatos() {
+        boolean existBD = true;
+        try{
+
+            database.listCollectionNames();
+
+        }catch(MongoCommandException e){
+
+            if(e.getErrorCode() == 13){
+                System.err.println(ansi().fg(RED).a("Error, NO existe la base de datos").reset());
+                existBD = false;
+            }else{
+                System.err.println(ansi().fg(RED).a("Error, NO existe la base de datos").reset());
+                existBD = false;
+            }
+            existBD = false;
+        }catch(Exception e){
+
+            System.err.println(ansi().fg(RED).a("Error, NO existe la base de datos " + e.getMessage()).reset());
+            existBD = false;
+
+        }
+
+        if(existBD){
+            database.drop();
+            System.out.println(ansi().fg(GREEN).a("Base de Datos eliminada exitosamente.").reset());
+        }
+
+    }
+
+    public void eliminarRegistroPorId(String nameCollection, UUID id){
+        if(existeColeccion(nameCollection)){
+
+            DeleteResult rs = null;
+
+            switch (nameCollection) {
+                case "clientes":
+                    rs = clienteCollection.deleteOne(Filters.eq("cliente_id", id));
+                    if(rs.getDeletedCount() > 0){
+                        System.out.println(ansi().fg(GREEN).a("\t\t\t\t\t| Cliente " + id + " eliminado correctamente").reset());
+                    }else{
+                        System.out.println(ansi().fg(RED).a("\t\t\t\t\t| No existe un cliente con el id: " + id).reset());
+                    }
+
+                    break;
+
+                case "destinos":
+                    rs = destinoCollection.deleteOne(Filters.eq("destino_id", id));
+                    if(rs.getDeletedCount() > 0){
+                        System.out.println(ansi().fg(GREEN).a("\t\t\t\t\t| Destino " + id + " eliminado correctamente").reset());
+                    }else{
+                        System.out.println(ansi().fg(RED).a("\t\t\t\t\t| No existe un destino con el id: " + id).reset());
+                    }
+                    break;
+
+                case "paquetes":
+                    rs = paqueteCollection.deleteOne(Filters.eq("paquete_id", id));
+                    if(rs.getDeletedCount() > 0){
+                        System.out.println(ansi().fg(GREEN).a("\t\t\t\t\t| Paquete " + id + " eliminado correctamente").reset());
+                    }else{
+                        System.out.println(ansi().fg(RED).a("\t\t\t\t\t| No existe un paquete con el id: " + id).reset());
+                    }
+                    break;
+
+                case "reservas":
+                    rs = reservaCollection.deleteOne(Filters.eq("reserva_id", id));
+                    if(rs.getDeletedCount() > 0){
+                        System.out.println(ansi().fg(GREEN).a("\t\t\t\t\t| Reserva " + id + " eliminado correctamente").reset());
+                    }else{
+                        System.out.println(ansi().fg(RED).a("\t\t\t\t\t| No existe una reserva con el id: " + id).reset());
+                    }
+                    break;
+
+                default:
+                    System.err.println(ansi().fg(RED).a("==>Error, NO existe la colección: " + nameCollection +" con el id " + id).reset());
+                    break;
+            }
+
+        } else{
+            System.err.println(ansi().fg(RED).a("==>Error, NO existe la colección: " + nameCollection).reset());
+        }
+    }
+
+    public void dropCollection(String nameCollection){
+        if(existeColeccion(nameCollection)){
+            database.getCollection(nameCollection).drop();
+            System.out.println(ansi().fg(GREEN).a("Colección '" + nameCollection + "' eliminada exitosamente.").reset());
+        }else{
+            System.out.println(ansi().fg(RED).a("La Colección '" + nameCollection + "' no existe.").reset());
+        }
+    }
+
+    public boolean existeColeccion(String nombreColeccion){
+        try {
+            // Verificar si la colección existe
+            return database.listCollectionNames().into(new ArrayList<>()).contains(nombreColeccion);
+        } catch (Exception e) {
+            System.err.println(ansi().fg(RED).a("==>Error, NO existe la colección: " + e.getMessage()).reset());
+            return false;
+        }
+    }
+
+    public void dropCollectionsSecundaries() {
+        dropCollection("tempDestinosCollection");
+        dropCollection("resumenReservasPorPaqueteCollection");
+        dropCollection("disponibilidad_paquetes");
+    }
+
 }

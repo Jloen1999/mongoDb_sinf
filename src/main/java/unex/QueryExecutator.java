@@ -29,20 +29,227 @@ public class QueryExecutator {
     private static boolean opcionValida = false;
     private static String input = "";
     private static UUID id = null;
+    private static boolean isAdmin = false;
 
     public QueryExecutator(MongoDatabase database) {
         this.database = database;
         indt = new InsertarDatos(database);
     }
 
+    public void menuPrincipal() {
+
+        opcionesList = getMenuPrincipal();
+
+        while (true) {
+            System.out.println(ansi().fg(YELLOW).a("╔═══════════════════════════════════════════════════════════════════════════════════════════════════════════════╗\n" +
+                    ansi().fg(BLUE).a("\t\t\t\t\t\t\t\t\tMENÚ").reset() + "\n" +
+                    ansi().fg(YELLOW).a("╠═══════════════════════════════════════════════════════════════════════════════════════════════════════════════╣\n").reset()));
+
+            showOptions(opcionesList);
+
+            boolean opcionValida = false;
+
+            while (!opcionValida) {
+                System.out.print(ansi().fg(YELLOW).a("==>Seleccione una opción: ").reset());
+                // Verificar si la entrada es un número
+                if (in.hasNextInt()) {
+                    opcion = in.nextInt();
+                    opcionValida = true;
+                } else {
+                    // La entrada no es un número
+                    System.out.println(ansi().fg(RED).a("La opcion introducida no es un número.\n").reset());
+                    in.next();
+                }
+            }
+            in.nextLine(); // Consumir la nueva línea después de leer un entero
+
+            switch (opcion) {
+                case 1:
+                    isAdmin = true;
+                    menuAdmin();
+                    break;
+                case 2:
+                    isAdmin = false;
+                    executeQueries();
+                    break;
+                case 3:
+                    salir();
+                    break;
+                default:
+                    System.out.println(ansi().fg(RED).a("Opción no válida. Por favor, seleccione una opción válida.").reset());
+            }
+        }
+    }
+
+    private void menuAdmin() {
+        isAdmin = true;
+
+        opcionesList = getMenuAdmin();
+
+        while (true) {
+            // Imprimir las opciones del Set
+            System.out.println(ansi().fg(YELLOW).a("╔═══════════════════════════════════════════════════════════════════════════════════════════════════════════════╗\n" +
+                    ansi().fg(BLUE).a("\t\t\t\t\t\t\t\t\tMENÚ ADMIN").reset() + "\n" +
+                    ansi().fg(YELLOW).a("╠═══════════════════════════════════════════════════════════════════════════════════════════════════════════════╣\n").reset()));
+
+            showOptions(opcionesList);
+
+            boolean opcionValida = false;
+
+            while (!opcionValida) {
+                System.out.print(ansi().fg(YELLOW).a("==>Seleccione una opción: ").reset());
+                // Verificar si la entrada es un número
+                if (in.hasNextInt()) {
+                    opcion = in.nextInt();
+                    opcionValida = true;
+                } else {
+                    // La entrada no es un número
+                    System.out.println(ansi().fg(RED).a("La opcion introducida no es un número.\n").reset());
+                    in.next();
+                }
+            }
+            in.nextLine(); // Consumir la nueva línea después de leer un entero
+
+            switch (opcion) {
+                case 1:
+                    indt.cargarDatos();
+                    break;
+                case 2:
+                    indt.limpiarDatos();
+                    break;
+                case 3:
+                    executeQueries();
+                    break;
+                case 4:
+                    System.out.print(ansi().fg(BLUE).a("==>Introduce el Id de un cliente: ").reset());
+                    input = in.nextLine();
+                    try {
+                        id = UUID.fromString(input);
+                        indt.eliminarRegistroPorId("clientes",id);
+                    } catch (IllegalArgumentException e) {
+                        System.out.print((ansi().fg(RED).a("Introduce un Id de un cliente existente\n").reset()));
+                    }
+                    break;
+                case 5:
+                    System.out.print(ansi().fg(BLUE).a("==>Introduce el Id de un destino: ").reset());
+                    input = in.nextLine();
+                    try {
+                        id = UUID.fromString(input);
+                        indt.eliminarRegistroPorId("destinos",id);
+                    } catch (IllegalArgumentException e) {
+                        System.out.print((ansi().fg(RED).a("Introduce un Id de un destino existente\n").reset()));
+                    }
+                    break;
+                case 6:
+                    System.out.print(ansi().fg(BLUE).a("==>Introduce el Id de un paquete: ").reset());
+                    input = in.nextLine();
+                    try {
+                        id = UUID.fromString(input);
+                        indt.eliminarRegistroPorId("paquetes",id);
+                    } catch (IllegalArgumentException e) {
+                        System.out.print((ansi().fg(RED).a("Introduce un Id de un destino existente\n").reset()));
+                    }
+                    break;
+                case 7:
+                    System.out.print(ansi().fg(BLUE).a("==>Introduce el Id de una reserva: ").reset());
+                    input = in.nextLine();
+                    try {
+                        id = UUID.fromString(input);
+                        indt.eliminarRegistroPorId("reservas",id);
+                    } catch (IllegalArgumentException e) {
+                        System.out.print((ansi().fg(RED).a("Introduce un Id de una reserva existente\n").reset()));
+                    }
+                    break;
+                case 8:
+                    indt.dropCollectionsSecundaries();
+                    break;
+                case 9:
+                    menuPrincipal();
+                    break;
+                case 10:
+                    salir();
+                    break;
+                default:
+                    System.out.println(ansi().fg(RED).a("Opción no válida. Por favor, seleccione una opción válida.").reset());
+            }
+        }
+    }
+
+    public void menuCliente() {
+        isAdmin = false;
+        opcionesList = getMenuCliente();
+
+        while (true) {
+            System.out.println(ansi().fg(YELLOW).a("╔═══════════════════════════════════════════════════════════════════════════════════════════════════════════════╗\n" +
+                    ansi().fg(BLUE).a("\t\t\t\t\t\t\t\t\tMENÚ CLIENTE").reset() + "\n" +
+                    ansi().fg(YELLOW).a("╠═══════════════════════════════════════════════════════════════════════════════════════════════════════════════╣\n").reset()));
+
+            showOptions(opcionesList);
+
+            boolean opcionValida = false;
+
+            while (!opcionValida) {
+                System.out.print(ansi().fg(YELLOW).a("==>Seleccione una opción: ").reset());
+                // Verificar si la entrada es un número
+                if (in.hasNextInt()) {
+                    opcion = in.nextInt();
+                    opcionValida = true;
+                } else {
+                    // La entrada no es un número
+                    System.out.println(ansi().fg(RED).a("La opcion introducida no es un número.\n").reset());
+                    in.next();
+                }
+            }
+            in.nextLine(); // Consumir la nueva línea después de leer un entero
+
+            switch (opcion) {
+                case 1:
+                    executeQueries();
+                    break;
+                case 2:
+                    consultarDatosCliente(); // Cosultamos los datos del usuario de la máquina junto a los datos de la proipia máquina sobre la que se ejecuta el programa
+                case 3:
+                    menuPrincipal();
+                case 4:
+                    salir();
+                    break;
+                default:
+                    System.out.println(ansi().fg(RED).a("Opción no válida. Por favor, seleccione una opción válida.").reset());
+            }
+        }
+    }
+
+    private void consultarDatosCliente() {
+        System.out.println(ansi().fg(YELLOW).a("╔═══════════════════════════════════════════════════════════════════════════════════════════════════════════════╗\n" +
+                ansi().fg(BLUE).a("\t\t\t\t\t\t\t\t\tDatos de cliente").reset() + "\n" +
+                ansi().fg(YELLOW).a("╠═══════════════════════════════════════════════════════════════════════════════════════════════════════════════╣\n").reset()));
+        String nombreUsuario = System.getProperty("user.name");
+        String directorioUsuario = System.getProperty("user.home");
+
+        System.out.println(ansi().fg(GREEN).a("==>Datos del Usuario:").reset());
+        System.out.println(ansi().fg(GREEN).a("==>Nombre de Usuario: " + nombreUsuario).reset());
+        System.out.println(ansi().fg(GREEN).a("==>Directorio del Usuario: " + directorioUsuario).reset());
+
+        String sistemaOperativo = System.getProperty("os.name");
+        String versionSistemaOperativo = System.getProperty("os.version");
+        String arquitecturaSistema = System.getProperty("os.arch");
+
+        System.out.println(ansi().fg(GREEN).a("==>Datos de la Máquina:").reset());
+        System.out.println(ansi().fg(GREEN).a("==>Sistema Operativo: " + sistemaOperativo).reset());
+        System.out.println(ansi().fg(GREEN).a("==>Versión del Sistema Operativo: " + versionSistemaOperativo).reset());
+        System.out.println(ansi().fg(GREEN).a("==>Arquitectura del Sistema: " + arquitecturaSistema).reset());
+    }
+
     public void executeQueries() {
+
+        String clientOrAdmin = isAdmin ? "Admin" : "Cliente";
 
         opcionesList = getTiposConsultas();
 
         while (true) {
             // Imprimir las opciones
             System.out.println(ansi().fg(YELLOW).a("╔═══════════════════════════════════════════════════════════════════════════════════════════════════════════════╗\n" +
-                    ansi().fg(BLUE).a("\t\t\t\t\t\t\t\t\tMenú de Opciones").reset() + "\n" +
+                    ansi().fg(BLUE).a("\t\t\t\t\t\t\t\t\tMENÚ DE CONSULTAS: "+clientOrAdmin).reset() + "\n" +
                     ansi().fg(YELLOW).a("╠═══════════════════════════════════════════════════════════════════════════════════════════════════════════════╣\n").reset()));
 
             showOptions(opcionesList);
@@ -74,6 +281,13 @@ public class QueryExecutator {
                     menuConsultasComplejas();
                     break;
                 case 4:
+                    if(isAdmin){
+                        menuAdmin();
+                    }else{
+                        menuCliente();
+                    }
+                    break;
+                case 5:
                     salir();
                     break;
                 default:
@@ -140,7 +354,7 @@ public class QueryExecutator {
 
                     break;
                 case 6:
-                    System.out.print("==>Introduce el Id de un cliente: ");
+                    System.out.print(ansi().fg(BLUE).a("==>Introduce el Id de un cliente: ").reset());
                     input = in.nextLine();
                     try {
                         id = UUID.fromString(input);
@@ -151,7 +365,7 @@ public class QueryExecutator {
                     }
                     break;
                 case 7:
-                    System.out.print("==>Introduce el Id de un destino: ");
+                    System.out.print(ansi().fg(BLUE).a("==>Introduce el Id de un destino: ").reset());
                     input = in.nextLine();
                     try {
                         id = UUID.fromString(input);
@@ -190,7 +404,7 @@ public class QueryExecutator {
         }
     }
 
-    private void menuConsultasAvanzadas(){
+    private void menuConsultasAvanzadas() {
         opcionesList = getConsultasAvanzadas();
 
         while (true) {
@@ -227,7 +441,7 @@ public class QueryExecutator {
                     indt.getResumenReservasPorPaqueteCollection();
                     break;
                 case 3:
-                    System.out.print("==>Introduce el clima de un destino: ");
+                    System.out.print(ansi().fg(BLUE).a("==>Introduce el clima de un destino: ").reset());
                     input = in.nextLine();
                     indt.getAllClientesByDestinoClima(input);
                     break;
@@ -241,7 +455,7 @@ public class QueryExecutator {
                     // Comprobar indice
                     indt.checkIndex("temp_destinos");
 
-                    System.out.print("==>Introduce un país: ");
+                    System.out.print(ansi().fg(BLUE).a("==>Introduce un pais: ").reset());
                     input = in.nextLine();
                     try {
                         indt.findAndInsertDestinosByPais(input);
@@ -252,7 +466,8 @@ public class QueryExecutator {
                     indt.showDestinosFromTempTable();
 
                     break;
-                case 6: executeQueries();
+                case 6:
+                    executeQueries();
                     break;
                 case 7:
                     salir();
@@ -303,16 +518,16 @@ public class QueryExecutator {
                     indt.checkIndex("disponibilidad_paquetes");
                     break;
                 case 4:
-                    System.out.print("==>Introduce el Id de un destino: ");
+                    System.out.print(ansi().fg(BLUE).a("==>Introduce el id de un destino: ").reset());
                     input = in.nextLine();
-                    System.out.print("==>Introduce la duración del paquete: ");
+                    System.out.print(ansi().fg(BLUE).a("==>Introduce la duración del paquete: ").reset());
                     int duracion = in.nextInt();
                     in.nextLine(); // Consumir la nueva línea después de leer un entero
                     try {
                         id = UUID.fromString(input);
                         indt.getPaquetesDisponibles(id, duracion);
                     } catch (IllegalArgumentException e) {
-                        System.out.print((ansi().fg(RED).a("Introduce un Id de un destino existente\n").reset()));
+                        System.out.print((ansi().fg(RED).a("Introduce un Id y la duración de un destino existentes\n").reset()));
                     }
 
                     break;
@@ -339,6 +554,7 @@ public class QueryExecutator {
         opcionesList.add("CONSULTAS BÁSICAS.");
         opcionesList.add("CONSULTAS AVANZADAS CON INDEXACIÓN.");
         opcionesList.add("CONSULTAS COMPLEJAS CON INDEXACIÓN");
+        opcionesList.add("Volver");
         opcionesList.add("Salir");
 
         return opcionesList;
@@ -388,11 +604,45 @@ public class QueryExecutator {
         return opcionesList;
     }
 
+    public static List<String> getMenuAdmin() {
+        opcionesList = new ArrayList<>();
+        opcionesList.add("Introducir registros a la Base de Datos.");
+        opcionesList.add("Limpiar Base de Datos.");
+        opcionesList.add("Consultar datos.");
+        opcionesList.add("Eliminar cliente por ID.");
+        opcionesList.add("Eliminar destino por ID.");
+        opcionesList.add("Eliminar paquete por ID.");
+        opcionesList.add("Eliminar reserva por ID");
+        opcionesList.add("Eliminar Colecciones secundarias.");
+        opcionesList.add("Volver");
+        opcionesList.add("Salir");
 
-    // Función para solicitar una fecha usando JOptionPane
+        return opcionesList;
+    }
+
+    public static List<String> getMenuPrincipal() {
+        opcionesList = new ArrayList<>();
+        opcionesList.add("Admin.");
+        opcionesList.add("Cliente.");
+        opcionesList.add("Salir");
+
+        return opcionesList;
+    }
+
+    public static List<String> getMenuCliente() {
+        opcionesList = new ArrayList<>();
+        opcionesList.add("Consultar datos.");
+        opcionesList.add("Consultar datos de cliente.");
+        opcionesList.add("Volver");
+        opcionesList.add("Salir");
+
+        return opcionesList;
+    }
+
+
     private static Instant solicitarFecha(String mensaje) {
         do {
-            System.out.print(mensaje);
+            System.out.print(ansi().fg(BLUE).a(mensaje).reset());
             String fechaString = in.nextLine();
             try {
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -418,7 +668,7 @@ public class QueryExecutator {
     }
 
 
-    public void salir(){
+    public void salir() {
         System.out.println(ansi().fg(BLUE).a("  ___ ___ _  _   ___  ___   _      _     ___ ___    __ ___ _____ ___ ___   _   \n" +
                 " | __|_ _| \\| | |   \\| __| | |    /_\\   | _ \\ _ \\  /_// __|_   _|_ _/ __| /_\\  \n" +
                 " | _| | || .` | | |) | _|  | |__ / _ \\  |  _/   / /--\\ (__  | |  | | (__ / _ \\ \n" +
